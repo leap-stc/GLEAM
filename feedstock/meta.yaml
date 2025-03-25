@@ -1,5 +1,5 @@
 title: "GLEAM"
-description: "The Global Land Evaporation Amsterdam Model (GLEAM) provides global gridded estimates of terrestrial evaporation and root-zone soil moisture based on satellite observations. GLEAM supports research in hydrology, land-atmosphere interactions, and climate monitoring from 1980 to the present."
+description: "The Global Land Evaporation Amsterdam Model (GLEAM) version 4.2a provides global gridded estimates of terrestrial evaporation and root-zone soil moisture based on satellite observations. GLEAM supports research in hydrology, land-atmosphere interactions, and climate monitoring from 1980 to the present."
 
 recipes:
   - id: "GLEAM"

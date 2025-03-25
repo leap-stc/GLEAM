@@ -14,6 +14,6 @@ tags:
 stores:
   - id: "GLEAM"
     name: "GLEAM version 4 Global Evapotranspiration"
-    url: "https://nyu1.osn.mghpcc.org/leap-pangeo-pipeline/GLEAM-v4-ET/GLEAM-v4-ET.zarr"
+    url: "https://nyu1.osn.mghpcc.org/leap-pangeo-pipeline/GLEAM/GLEAM.zarr"
     source: "GLEAM v4 Evapotranspiration Dataset"
     source_url: "https://www.gleam.eu/"

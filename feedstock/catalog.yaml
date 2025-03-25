@@ -1,20 +1,19 @@
-"ncviewjs:meta_yaml_url": "https://github.com/leap-stc/GRACE-GRACE-FO-TWS/blob/main/feedstock/meta.yaml"
+"ncviewjs:meta_yaml_url": "https://github.com/leap-stc/GLEAM/blob/main/feedstock/meta.yaml"
 tags:
-  - GRACE
-  - GRACE-FO
-  - Total Water Storage (TWS)
-  - Earth Observation
-  - Satellite Data
+  - GLEAM
+  - Evapotranspiration
   - Global
   - Remote Sensing
+  - Earth Observation
   - Hydrology
   - Climate Monitoring
+  - Terrestrial Water Cycle
+  - Land Surface
   - Water Resources
 
 stores:
-  - id: "GRACE-GRACE-FO-TWS"
-    name: "GRACE & GRACE-FO Total Water Storage (TWS)"
-    url: "https://nyu1.osn.mghpcc.org/leap-pangeo-pipeline/GRACE-GRACE-FO-TWS/GRACE-GRACE-FO-TWS.zarr"
-    source: "GRACE/GRACE-FO Satellite Mission Data (2002–Present)"
-    source_url: "https://www.nasa.gov/mission_pages/grace/index.html"
-
+  - id: "GLEAM"
+    name: "GLEAM version 4 Global Evapotranspiration"
+    url: "https://nyu1.osn.mghpcc.org/leap-pangeo-pipeline/GLEAM-v4-ET/GLEAM-v4-ET.zarr"
+    source: "GLEAM v4 Evapotranspiration Dataset"
+    source_url: "https://www.gleam.eu/"

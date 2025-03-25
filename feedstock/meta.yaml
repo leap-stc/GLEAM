@@ -1,50 +1,77 @@
-title: "GRACE-GRACE-FO-TWS"
-description: "Global Total Water Storage (TWS) data derived from GRACE and GRACE-FO satellite missions. This dataset is used for hydrological and climate monitoring, assessing water resources on a global scale."
+title: "GLEAM"
+description: "The Global Land Evaporation Amsterdam Model (GLEAM) provides global gridded estimates of terrestrial evaporation and root-zone soil moisture based on satellite observations. GLEAM supports research in hydrology, land-atmosphere interactions, and climate monitoring from 1980 to the present."
 
 recipes:
-  - id: "GRACE-GRACE-FO-TWS"
-    object: "recipe:GRACE-GRACE-FO-TWS"
+  - id: "GLEAM"
+    object: "recipe:GLEAM"
 
 provenance:
   providers:
-    - name: "NASA GRACE & GRACE-FO Mission"
-      description: "NASA's GRACE and GRACE-FO missions measure changes in Earth's water storage, using satellite gravimetry data to monitor total water storage variations worldwide."
+    - name: "Ghent University"
+      description: "Home to the Hydrology and Remote Sensing Laboratory, Ghent University leads the development of the GLEAM dataset, focusing on improving global evaporation estimates using satellite data and physically-based modeling."
       roles:
         - data provider
         - research institution
-      url: "https://www.nasa.gov/mission_pages/grace/index.html"
+      url: "https://www.ugent.be/en"
+    - name: "Vrije Universiteit Amsterdam"
+      description: "The GLEAM dataset is developed by the Hydrology and Remote Sensing group at Vrije Universiteit Amsterdam and provides global land evaporation estimates using satellite data and a set of physically based modules."
+      roles:
+        - data provider
+        - research institution
+      url: "https://www.gleam.eu/"
 
-    - name: "Jet Propulsion Laboratory (JPL)"
-      description: "The Jet Propulsion Laboratory (JPL) processes GRACE and GRACE-FO satellite data for Earth science research and water storage monitoring."
+    - name: "European Space Agency (ESA)"
+      description: "The GLEAM model incorporates satellite observations provided by ESA missions as part of their contribution to climate data records and remote sensing research."
       roles:
-        - data provider
+        - data contributor
         - research institution
-      url: "https://www.jpl.nasa.gov/"
+      url: "https://www.esa.int/"
 
   license: "Creative Commons Attribution 4.0 (CC BY 4.0)"
 
-acknowledgements: >
-  The GRACE and GRACE-FO Total Water Storage dataset is based on data from NASA's GRACE and GRACE-FO missions, which measure Earth's gravity field variations to monitor changes in global water storage. We acknowledge the **NASA GRACE and GRACE-FO mission teams** for providing the satellite gravimetry data, which is accessible at [NASA GRACE page](https://www.nasa.gov/mission_pages/grace/index.html). The dataset has been validated through comparisons with hydrological models, in-situ measurements, and other water resources monitoring efforts.
 
 citation:
-  - authors: "Landerer, F.W., Swenson, S.C."
-    year: 2012
-    title: "Accuracy of scaled GRACE terrestrial water storage estimates."
-    journal: "Water Resources Research"
-    volume: 48
-    pages: W04531
-    doi: "10.1029/2011WR011453"
+  - authors: "Miralles, D.G., Holmes, T.R.H., de Jeu, R.A.M., Gash, J.H., Meesters, A.G.C.A., Dolman, A.J."
+    year: 2011
+    title: "Global land-surface evaporation estimated from satellite-based observations"
+    journal: "Hydrology and Earth System Sciences"
+    volume: 15
+    pages: 453–469
+    doi: "10.5194/hess-15-453-2011"
 
-  - authors: "Wahr, J., Molenaar, M., & Bryan, F."
-    year: 1998
-    title: "Time-variable gravity from satellite observations."
-    journal: "Journal of Geophysical Research"
-    volume: 103
-    pages: 30205-30229
-    doi: "10.1029/98JB02844"
+  - authors: "Miralles, D.G., Bonte, O., Koppa, A., Baez-Villanueva, O.M., Tronquo, E., Zhong, F., Beck, H.E., Hulsman, P., Dorigo, W.A., Verhoest, N.E.C., Haghdoost, S."
+    year: 2025
+    title: "GLEAM4: global land evaporation and soil moisture dataset at 0.1° resolution from 1980 to near present"
+    journal: "Scientific Data"
+    volume: 12
+    pages: 416
+    doi: "10.1038/s41597-024-03343-4"
+
+  - authors: "Zhong, F., Jiang, S., van Dijk, A.I.J.M., Ren, L., Schellekens, J., Miralles, D.G."
+    year: 2022
+    title: "Revisiting large-scale interception patterns constrained by a synthesis of global experimental data"
+    journal: "Hydrology and Earth System Sciences"
+    volume: 26
+    pages: 5647–5667
+    doi: "10.5194/hess-26-5647-2022"
+
+  - authors: "Hulsman, P., Keune, J., Koppa, A., Schellekens, J., Miralles, D.G."
+    year: 2023
+    title: "Incorporating Plant Access to Groundwater in Existing Global, Satellite‐Based Evaporation Estimates"
+    journal: "Water Resources Research"
+    volume: 59
+    doi: "10.1029/2023WR034069"
+
+  - authors: "Koppa, A., Rains, D., Hulsman, P., Poyatos, R., Miralles, D.G."
+    year: 2022
+    title: "A deep learning-based hybrid model of global terrestrial evaporation"
+    journal: "Nature Communications"
+    volume: 13
+    pages: 1912
+    doi: "10.1038/s41467-022-29664-y"
 
 contact:
-  email: "grace@nasa.gov"
+  email: "info@gleam.eu"
 
 maintainers:
   - name: "Mitra Cattry"

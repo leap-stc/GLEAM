@@ -17,3 +17,47 @@ stores:
     url: "https://nyu1.osn.mghpcc.org/leap-pangeo-pipeline/GLEAM/GLEAM.zarr"
     source: "GLEAM v4 Evapotranspiration Dataset"
     source_url: "https://www.gleam.eu/"
+variables:
+      - name: Total Evaporation
+        symbol: ET
+        description: Total terrestrial evaporation (including all components)
+
+      - name: Potential Evaporation
+        symbol: PET
+        description: Potential terrestrial evaporation under no water stress
+
+      - name: Transpiration
+        symbol: T
+        description: Plant transpiration component of evaporation
+
+      - name: Soil Evaporation
+        symbol: E
+        description: Evaporation from the bare soil component
+
+      - name: Interception Loss
+        symbol: Ei
+        description: Evaporation from rainfall intercepted by the canopy
+
+      - name: Snow Sublimation
+        symbol: Es
+        description: Evaporation via sublimation from the snowpack
+
+      - name: Root-zone Soil Moisture
+        symbol: SMroot
+        description: Soil moisture in the root zone (0–100 cm)
+
+      - name: Surface Soil Moisture
+        symbol: SMsurf
+        description: Soil moisture in the surface layer (0–10 cm)
+
+      - name: Soil Moisture Anomaly
+        symbol: SMA
+        description: Anomaly in root-zone soil moisture relative to climatology
+
+      - name: Evaporative Stress Factor
+        symbol: S
+        description: Factor (0–1) representing the reduction in ET due to moisture stress
+
+      - name: Snow Water Equivalent
+        symbol: SWE
+        description: Water content stored in the snowpack

@@ -7,10 +7,13 @@ import xarray as xr
 import warnings
 import matplotlib.pyplot as plt
 warnings.filterwarnings("ignore")
+from distributed import Client 
 
 #------------
 # 2. Connect to SFTP and S3
 #------------
+client = Client(n_workers=16)
+
 sftp_fs = fsspec.filesystem(
     "sftp", 
     host="hydras.ugent.be", 

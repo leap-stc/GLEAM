@@ -36,7 +36,6 @@ zarr_store_path="leap-pangeo-pipeline/GLEAM/GLEAM.zarr"
 years = range(1980, 2024)
 base_dir = "data/v4.2a/daily"
 keywords = ["SMs", "Ei", "E", "H", "Et", "Ew", "Ep_rad", "Ep", "Ec", "SMrz", "Es", "Eb", "Ep_aero", "S"]
-variables=keywords[:2]
 print(f"variables are {variables}")
 # Main loop
 for year in years:

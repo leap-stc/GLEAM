@@ -8,11 +8,12 @@ import warnings
 import matplotlib.pyplot as plt
 warnings.filterwarnings("ignore")
 from distributed import Client 
-
+import time
+import dask
 #------------
 # 2. Connect to SFTP and S3
 #------------
-client = Client(n_workers=16)
+client = Client()
 
 sftp_fs = fsspec.filesystem(
     "sftp", 
@@ -28,57 +29,53 @@ s3_fs = s3fs.S3FileSystem(
 )
 
 mapper = s3_fs.get_mapper("leap-pangeo-pipeline/GLEAM/GLEAM.zarr")
-
+zarr_store_path="leap-pangeo-pipeline/GLEAM/GLEAM.zarr"
 #------------
 # 3. Define variables and years
 #------------
 years = range(1980, 2024)
 base_dir = "data/v4.2a/daily"
 keywords = ["SMs", "Ei", "E", "H", "Et", "Ew", "Ep_rad", "Ep", "Ec", "SMrz", "Es", "Eb", "Ep_aero", "S"]
+variables=keywords[:2]
+print(f"variables are {variables}")
+# Main loop
+for year in years:
+    print(f"\n🕒 Starting processing for year {year}...")
+    start_time = time.time()
 
-initialized = False  # Tracks whether the Zarr store has been initialized
+    datasets = []
+    for var in variables:
+        print(f"🔍 Processing variable: {var}")
+        var_datasets = []
+        remote_path = f"{base_dir}/{year}/{var}_{year}_GLEAM_v4.2a.nc"
 
-#------------
-# 4. Loop through variables and write to Zarr
-#------------
-for var in keywords:
-    paths = []
-
-    #------------
-    # 4.1 Gather file paths for this variable
-    #------------
-    for year in years:
-        path = f"{base_dir}/{year}/{var}_{year}_GLEAM_v4.2a.nc"
         try:
-            sftp_fs.info(path)
-            paths.append(path)
-        except FileNotFoundError:
-            print(f"⚠️ Missing: {path}")
+            if sftp_fs.exists(remote_path):
+                print(f"📂 Found: {remote_path}")
+                f = sftp_fs.open(remote_path, mode="rb")
+                ds = xr.open_dataset(f, engine="h5netcdf")
+                print(f"📐 Dimensions: {ds.dims}")
+                var_datasets.append(ds[[var]])
+        except Exception as e:
+            print(f"⚠️ Skipping {remote_path}: {e}")
 
-    #------------
-    # 4.2 If files exist, open and write to Zarr
-    #------------
-    if paths:
-        open_files = [sftp_fs.open(p) for p in paths]
-        ds = xr.open_mfdataset(
-            open_files,
-            engine="h5netcdf",
-            combine="by_coords",
-            parallel=True,
-            chunks={"time": 365, "lat": 180, "lon": 360}
-        )
+        if var_datasets:
+            combined_var = var_datasets[0] if len(var_datasets) == 1 else xr.concat(var_datasets, dim="time")
+            combined_var = combined_var.chunk({"time": -1, "lat": 180, "lon": 360})
+            datasets.append(combined_var)
+            print(f"✅ Added {var} to dataset list with chunking.")
 
-        print(f"✅ Ready to write: {var}")
+    # Merge and write to Zarr
+    ds_merged = xr.merge(datasets)
+    with dask.config.set(scheduler="synchronous"):
+        if year == years[0]:
+            ds_merged.to_zarr(zarr_store_path, mode="w", consolidated=True)
+        else:
+            ds_merged.to_zarr(zarr_store_path, mode="a", consolidated=True, append_dim="time")
+        print(f"💾 Zarr write complete for year {year}")
 
-        mode = "w" if not initialized else "a"
-        ds[[var]].chunk({"time": 200, "lat": 180, "lon": 360}).to_zarr(
-            mapper, mode=mode, consolidated=False, zarr_format=2
-        )
-
-        print(f"📦 Written {var} with mode '{mode}'")
-        initialized = True
-    else:
-        print(f"🚫 Skipped: {var}")
+    elapsed = time.time() - start_time
+    print(f"✅ Year {year} completed in {elapsed:.2f} seconds.")
 
 #------------
 # 5. Final metadata consolidation

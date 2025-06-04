@@ -31,5 +31,3 @@ variables:
         description: Anomaly in root-zone soil moisture relative to climatology
 
       - name: Evaporative Stress Factor
-        symbol: SWE, mm water-equivalent
-        description: Water content stored in the snowpack

@@ -19,10 +19,6 @@ stores:
     source_url: "https://www.gleam.eu/"
 variables:
       - name: Total Evaporation
-        symbol: PET (Eₚ), mm d⁻¹
-        description: Potential terrestrial evaporation under no water stress
-
-      - name: Transpiration
         symbol: E  (E_b), mm d⁻¹
         description: Evaporation from the bare soil component
 

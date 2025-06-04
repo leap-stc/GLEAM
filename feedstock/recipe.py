@@ -1,103 +1,118 @@
-#------------
-# 1. Imports and setup
-#------------
-import fsspec
-import s3fs
 import xarray as xr
-import warnings
-import matplotlib.pyplot as plt
-warnings.filterwarnings("ignore")
-from distributed import Client 
-import time
-import dask
-#------------
-# 2. Connect to SFTP and S3
-#------------
-client = Client()
-
-sftp_fs = fsspec.filesystem(
-    "sftp", 
-    host="hydras.ugent.be", 
-    port=2225,
-    username="gleamuser", 
-    password="GLEAM4#h-cel_924"
+import os
+import re
+import logging
+import gcsfs
+import gc
+from dask.distributed import Client, LocalCluster
+# ------------------------------------------------------------------
+# Logging setup
+# ------------------------------------------------------------------
+logging.basicConfig(
+    filename='prepare_gleam_zarr.log',
+    level=logging.INFO,
+    format='%(asctime)s %(message)s'
 )
+logging.info("Starting recipe.py")
 
-s3_fs = s3fs.S3FileSystem(
-    anon=True, 
-    client_kwargs={"endpoint_url": "https://nyu1.osn.mghpcc.org"}
-)
+def get_chunk_scheme(ds, target_MB=100):
+    """
+    Estimate chunking so that each chunk is ≲ target_MB MB.
+    Returns a dict of {'time': ..., 'lat': ..., 'lon': ...}.
+    """
+    var = next(iter(ds.data_vars))
+    nbytes = ds[var].dtype.itemsize
+    lat, lon, time = ds.sizes['lat'], ds.sizes['lon'], ds.sizes['time']
+    full_MB = (lat * lon * nbytes) / (1024**2)
+    if full_MB <= target_MB:
+        return {'time': time}
+    # allocate spatial chunks to fit target_MB for full time slice
+    allowed_points = (target_MB * 1024**2) / nbytes
+    ratio = lat / lon
+    lat_chunk = max(1, min(lat, int((allowed_points * ratio)**0.5)))
+    lon_chunk = max(1, min(lon, int((allowed_points / ratio)**0.5)))
+    return {'time': time, 'lat': lat_chunk, 'lon': lon_chunk}
 
-mapper = s3_fs.get_mapper("leap-pangeo-pipeline/GLEAM/GLEAM.zarr")
-zarr_store_path="leap-pangeo-pipeline/GLEAM/GLEAM.zarr"
-#------------
-# 3. Define variables and years
-#------------
-years = range(1980, 2024)
-base_dir = "data/v4.2a/daily"
-keywords = ["SMs", "Ei", "E", "H", "Et", "Ew", "Ep_rad", "Ep", "Ec", "SMrz", "Es", "Eb", "Ep_aero", "S"]
-print(f"variables are {variables}")
-# Main loop
-for year in years:
-    print(f"\n🕒 Starting processing for year {year}...")
-    start_time = time.time()
+def main():
+    # ------------------------------------------------------------------
+    # Settings
+    # ------------------------------------------------------------------
+    bucket_prefix = "leap-scratch/mitraa90/GLEAM"
+    variables = ["SMs", "Ei", "E", "H", "Et", "Ew", "Ep_rad", "Ep", "Ec", "SMrz", "Es", "Eb", "Ep_aero", "S"]#["Es"]#,"SMs","Ei","E","H","Et","Ew","Ep_rad","Ep","Ec","SMrz","Eb","Ep_aero","S"]
+    #    target_MB = 100  # MB per chunk
 
-    datasets = []
+    # ------------------------------------------------------------------
+    # Start Dask & GCS
+    # ------------------------------------------------------------------
+    cluster = LocalCluster(n_workers=8, threads_per_worker=1, memory_limit="7GB")
+    client = Client(cluster)
+    n_workers = len(cluster.workers)
+    logging.info(f"Dask cluster started with {n_workers} workers")
+
+    fs = gcsfs.GCSFileSystem()
+
+    # List all .nc files
+    all_files = [f for f in fs.ls(bucket_prefix) if f.endswith('.nc')]
     for var in variables:
-        print(f"🔍 Processing variable: {var}")
-        var_datasets = []
-        remote_path = f"{base_dir}/{year}/{var}_{year}_GLEAM_v4.2a.nc"
+        # Filter files for this variable
+        pattern = re.compile(rf"^{re.escape(var)}_\d{{4}}_")
+        var_files = [
+            f for f in all_files
+            if pattern.match(os.path.basename(f))
+        ]
 
-        try:
-            if sftp_fs.exists(remote_path):
-                print(f"📂 Found: {remote_path}")
-                f = sftp_fs.open(remote_path, mode="rb")
-                ds = xr.open_dataset(f, engine="h5netcdf")
-                print(f"📐 Dimensions: {ds.dims}")
-                var_datasets.append(ds[[var]])
-        except Exception as e:
-            print(f"⚠️ Skipping {remote_path}: {e}")
+        if not var_files:
+            logging.warning(f"No files for variable {var}")
+            continue
+        print(f"Found {len(var_files)} NetCDF files for variable {var}")
+        pattern = re.compile(rf"^{re.escape(var)}_\d{{4}}_")
+        var_files = sorted(f for f in all_files if pattern.match(os.path.basename(f)))
+        # Batch & inspect
+        batch_size = 4
+        batches = [var_files[i:i+batch_size] for i in range(0, len(var_files), batch_size)]
+        target_store = f"gs://leap-persistent/data-library/GLEAM/GLEAM-{var}.zarr"
+        first = True
+        for idx, batch in enumerate(batches, start=1):
+            print(f"\nVariable {var}: Batch {idx}/{len(batches)} with {len(batch)} files")
+            # open_mfdataset in a with‐block, no fsspec cache
+            files = [fs.open(p, "rb", cache_type="none") for p in batch]
+            # 2) pass them into open_mfdataset, but disable the parallel reader
+            with xr.open_mfdataset(
+                files,
+                engine='h5netcdf',
+                chunks={},
+                combine='by_coords',
+                parallel=False
+            ) as ds:
+                print(" files are openned")
+                chunk_scheme={'time': 487, 'lat': 200, 'lon': 300}
+                ds = ds.chunk(chunk_scheme)
+                print("data rechunked")
+                if idx == 1:
+                    dtype_bytes = ds[var].dtype.itemsize
+                    bytes_per_chunk = 487 * 200 * 300 * dtype_bytes
+                    mib = bytes_per_chunk / (1024**2)
+                    print(f"  • Chunk shape: (487,200,300) → {mib:.2f} MiB")
+                mode = 'w' if first else 'a'
+                append_dim = None if first else 'time'
+                print(f"  Writing mode={mode} to {target_store}")
+                ds[[var]].to_zarr(target_store,
+                    mode=mode,
+                    append_dim=append_dim,
+                    consolidated=first)
+                first = False
+                print("data written to zarr")
+                ds.close()
+            for f in files:
+                f.close()
+                # 4) nudge Python to free any dangling HDF5 pointers
+                gc.collect()
 
-        if var_datasets:
-            combined_var = var_datasets[0] if len(var_datasets) == 1 else xr.concat(var_datasets, dim="time")
-            combined_var = combined_var.chunk({"time": -1, "lat": 180, "lon": 360})
-            datasets.append(combined_var)
-            print(f"✅ Added {var} to dataset list with chunking.")
+    logging.info("Finished recipe.py")
+    # Clean up
+    client.close()
+    cluster.close()
 
-    # Merge and write to Zarr
-    ds_merged = xr.merge(datasets)
-    with dask.config.set(scheduler="synchronous"):
-        if year == years[0]:
-            ds_merged.to_zarr(zarr_store_path, mode="w", consolidated=True)
-        else:
-            ds_merged.to_zarr(zarr_store_path, mode="a", consolidated=True, append_dim="time")
-        print(f"💾 Zarr write complete for year {year}")
+if __name__ == "__main__":
+    main()
 
-    elapsed = time.time() - start_time
-    print(f"✅ Year {year} completed in {elapsed:.2f} seconds.")
-
-#------------
-# 5. Final metadata consolidation
-#------------
-ds=xr.open_zarr(mapper).to_zarr(mapper, mode="a", consolidated=True)
-
-n = len(keywords)
-cols = 4
-rows = (n + cols - 1) // cols
-
-fig, axes = plt.subplots(rows, cols, figsize=(5 * cols, 4 * rows), constrained_layout=True)
-
-for i, key in enumerate(keywords):
-    ax = axes.flat[i]
-    
-    if key in ds:
-        slice_2d = ds[key].isel(time=0)
-        slice_2d.plot(ax=ax, cmap="viridis", add_colorbar=False)
-        ax.set_title(key)
-        ax.set_xlabel("")
-        ax.set_ylabel("")
-    else:
-        ax.set_visible(False)
-
-plt.suptitle("GLEAM Variables on First Day", fontsize=16)
-plt.show()

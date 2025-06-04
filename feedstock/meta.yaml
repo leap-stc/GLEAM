@@ -70,11 +70,7 @@ citation:
     pages: 1912
     doi: "10.1038/s41467-022-29664-y"
 
-contact:
-  email: "info@gleam.eu"
 
 maintainers:
   - name: "Mitra Cattry"
     github: "mitraA90"
-  - name: "Raphael Hagen"
-    github: "norlandrhagen"

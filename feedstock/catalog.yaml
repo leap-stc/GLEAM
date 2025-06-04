@@ -23,10 +23,6 @@ variables:
         description: Potential terrestrial evaporation under no water stress
 
       - name: Transpiration
-        symbol: T (Eₜ), mm d⁻¹
-        description: Plant transpiration component of evaporation
-
-      - name: Soil Evaporation
         symbol: E  (E_b), mm d⁻¹
         description: Evaporation from the bare soil component
 

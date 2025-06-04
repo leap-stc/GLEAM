@@ -23,10 +23,6 @@ variables:
         description: Evaporation from the bare soil component
 
       - name: Interception Loss
-        symbol: Ei, mm d⁻¹
-        description: Evaporation from rainfall intercepted by the canopy
-
-      - name: Snow Sublimation
         symbol: Es, mm d⁻¹
         description: Evaporation via sublimation from the snowpack
 

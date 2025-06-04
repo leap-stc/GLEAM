@@ -19,10 +19,6 @@ stores:
     source_url: "https://www.gleam.eu/"
 variables:
       - name: Total Evaporation
-        symbol: Es, mm d⁻¹
-        description: Evaporation via sublimation from the snowpack
-
-      - name: Root-zone Soil Moisture
         symbol: SMroot, m³ m⁻³
         description: Soil moisture in the root zone (0–100 cm)
 

@@ -19,10 +19,7 @@ stores:
     source_url: "https://www.gleam.eu/"
 variables:
       - name: Total Evaporation
-        symbol: SMroot, m³ m⁻³
-        description: Soil moisture in the root zone (0–100 cm)
-
-      - name: Surface Soil Moisture
+ 
         symbol: SMsurf, m³ m⁻³
         description: Soil moisture in the surface layer (0–10 cm)
 

@@ -20,10 +20,6 @@ stores:
 variables:
       - name: Total Evaporation
  
-        symbol: SMsurf, m³ m⁻³
-        description: Soil moisture in the surface layer (0–10 cm)
-
-      - name: Soil Moisture Anomaly
         symbol: SMA, m³ m⁻³
         description: Anomaly in root-zone soil moisture relative to climatology
 

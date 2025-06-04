@@ -19,10 +19,6 @@ stores:
     source_url: "https://www.gleam.eu/"
 variables:
       - name: Total Evaporation
-        symbol: ET (E), mm d⁻¹
-        description: Total terrestrial evaporation (including all components)
-
-      - name: Potential Evaporation
         symbol: PET (Eₚ), mm d⁻¹
         description: Potential terrestrial evaporation under no water stress
 

@@ -20,7 +20,3 @@ stores:
 variables:
       - name: Total Evaporation
  
-        symbol: SMA, m³ m⁻³
-        description: Anomaly in root-zone soil moisture relative to climatology
-
-      - name: Evaporative Stress Factor
